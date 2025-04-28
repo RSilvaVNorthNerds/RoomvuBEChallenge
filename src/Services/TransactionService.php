@@ -45,6 +45,14 @@ class TransactionService {
     }
 
     public function softDeleteTransaction(int $id): bool {
-        return $this->transactionRepository->softDeleteTransaction($id);
+        try{
+            $transaction = $this->transactionRepository->getTransactionById($id);
+
+            return $this->transactionRepository->softDeleteTransaction($transaction->getId());
+        } catch(\Exception $e) {
+            error_log($e->getMessage());
+            throw new \Exception('Transaction of the provided id was not found');
+        }
+
     }
 }

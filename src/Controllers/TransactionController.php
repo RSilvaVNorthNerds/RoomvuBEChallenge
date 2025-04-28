@@ -72,12 +72,14 @@ class TransactionController {
         }
     }
 
-    public function archiveTransaction(Request $request, Response $response): Response {
-        $id = filter_var($request->request->get('id'), FILTER_SANITIZE_NUMBER_INT);
+    public function archiveTransaction(Request $request): Response {
+        $data = json_decode($request->getContent(), true);
+
+        $id = (int) filter_var($data['id'], FILTER_SANITIZE_NUMBER_INT);
 
         if (empty($id)) {
             return new JsonResponse([
-                'error' => 'Transaction ID is required'
+                'error' => 'Transaction ID is required but was not provided'
             ], Response::HTTP_BAD_REQUEST);
         }
 

@@ -59,5 +59,18 @@ class TransactionRepository {
             return false;
         }
     }
+
+    public function getTransactionById(int $id): TransactionModel {
+        $query = $this->pdo->prepare("SELECT * FROM transactions WHERE id = :id");
+        $query->execute(['id' => $id]);
+        
+        $transaction = $query->fetch(PDO::FETCH_ASSOC);
+
+        if(!$transaction) {
+            throw new \Exception('Transaction of the provided id was not found');
+        }
+
+        return new TransactionModel($transaction['user_id'], $transaction['amount'], $transaction['date'], $transaction['id'], $transaction['vanished_at']);
+    }
 }
 
