@@ -32,23 +32,19 @@ class ReportingService {
         }
         
         $csvFilePath = $reportsDir . '/user_daily_report_' . $userId . '_' . $currentDate . '.csv';
-        
-        $csvFile = fopen($csvFilePath, 'w');
 
-        if ($csvFile === false) {
-            throw new \Exception("Failed to open file for writing. Check path and permissions.");
-        }
+        $this->exportUserDailyReportToCSV($activeTransactions, $csvFilePath, $totalAmount, $numberOfTransactions);
 
-        fputcsv($csvFile, ['Date', 'Amount'], ",", "\"", "\\");
-        foreach ($activeTransactions as $transaction) {
-            fputcsv($csvFile, [$transaction['date'], $transaction['amount']], ",", "\"", "\\");
-        }
-        // Add summary row
-        fputcsv($csvFile, ['Total', $totalAmount, "Transactions: $numberOfTransactions"], ",", "\"", "\\");
-        fclose($csvFile);
+        return [
+            'totalAmount' => $totalAmount,
+            'numberOfTransactions' => $numberOfTransactions,
+            'transactions' => $activeTransactions,
+            'date' => $currentDate,
+            'userId' => $userId
+        ];
     }
 
-    public function generateGlobalDailyReport() {
+    public function generateGlobalDailyReport():array {
         $allTransactions = $this->transactionService->getAllTransactions();
 
         $activeTransactions = array_filter($allTransactions, function($transaction) {
@@ -63,7 +59,18 @@ class ReportingService {
 
         $csvFilePath = $reportsDir . '/global_daily_report_' . $currentDate . '.csv';
 
-        $csvFile = fopen($csvFilePath, 'w');
+        $this->exportGlobalDailyReportToCSV($activeTransactions, $csvFilePath, $totalAmount, $numberOfTransactions);
+
+        return [
+            'totalAmount' => $totalAmount,
+            'numberOfTransactions' => $numberOfTransactions,
+            'transactions' => $activeTransactions,
+            'date' => $currentDate
+        ];
+    }
+
+    private function exportGlobalDailyReportToCSV($transactions, $filePath, $totalAmount, $numberOfTransactions) {
+        $csvFile = fopen($filePath, 'w');
 
         if ($csvFile === false) {
             throw new \Exception("Failed to open file for writing. Check path and permissions.");
@@ -71,10 +78,26 @@ class ReportingService {
 
         fputcsv($csvFile, ['Date', 'Amount'], ",", "\"", "\\");
         
-        foreach ($activeTransactions as $transaction) {
+        foreach ($transactions as $transaction) {
             fputcsv($csvFile, [$transaction['date'], $transaction['amount']], ",", "\"", "\\");
         }
 
+        fputcsv($csvFile, ['Total', $totalAmount, "Transactions: $numberOfTransactions"], ",", "\"", "\\");
+        fclose($csvFile);
+    }
+
+    private function exportUserDailyReportToCSV($transactions, $csvFilePath, $totalAmount, $numberOfTransactions) {
+        $csvFile = fopen($csvFilePath, 'w');
+
+        if ($csvFile === false) {
+            throw new \Exception("Failed to open file for writing. Check path and permissions.");
+        }
+
+        fputcsv($csvFile, ['Date', 'Amount'], ",", "\"", "\\");
+        foreach ($transactions as $transaction) {
+            fputcsv($csvFile, [$transaction['date'], $transaction['amount']], ",", "\"", "\\");
+        }
+        // Add summary row
         fputcsv($csvFile, ['Total', $totalAmount, "Transactions: $numberOfTransactions"], ",", "\"", "\\");
         fclose($csvFile);
     }

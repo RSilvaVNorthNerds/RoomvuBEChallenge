@@ -27,8 +27,11 @@ class ReportingController {
         }
 
         try {
-            $this->reportingService->generateUserDailyReport($userId);
-            return new JsonResponse("Report generated successfully");
+            $reportData = $this->reportingService->generateUserDailyReport($userId);
+            return new JsonResponse([
+                'message' => 'User daily report generated successfully',
+                'reportData' => $reportData
+            ], Response::HTTP_OK);
         } catch(\Exception $e) {
             return new JsonResponse([
                 'error' => 'Failed to get user daily report: ' . $e->getMessage()
@@ -38,8 +41,11 @@ class ReportingController {
 
     public function generateGlobalDailyReport(Request $request): Response {
         try {
-            $this->reportingService->generateGlobalDailyReport();
-            return new JsonResponse("Global daily report generated successfully");
+            $reportData = $this->reportingService->generateGlobalDailyReport();
+            return new JsonResponse([
+                'message' => 'Global daily report generated successfully',
+                'reportData' => $reportData
+            ], Response::HTTP_OK);
         } catch(\Exception $e) {
             return new JsonResponse([
                 'error' => 'Failed to get global daily report: ' . $e->getMessage()
