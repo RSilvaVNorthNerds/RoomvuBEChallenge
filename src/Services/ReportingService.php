@@ -1,12 +1,19 @@
 <?php
 
 namespace App\Services;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 class ReportingService {
     private $transactionService;
+    private $redis;
 
     public function __construct() {
         $this->transactionService = new TransactionService();
+
+        $redisConnection = RedisAdapter::createConnection(
+            "redis://{$_ENV['REDIS_HOST']}:{$_ENV['REDIS_PORT']}"
+        );
+        $this->redis = $redisConnection;
     }
 
     public function generateUserDailyReport($userId) {
@@ -45,6 +52,16 @@ class ReportingService {
     }
 
     public function generateGlobalDailyReport():array {
+        $currentDate = date('Y-m-d');
+        $cacheKey = "global_daily_report_{$currentDate}";
+        
+        // Try to get data from cache first
+        $cachedData = $this->redis->get($cacheKey);
+        if ($cachedData !== false) {
+            error_log("Cache hit for global daily report");
+            return json_decode($cachedData, true);
+        }
+
         $allTransactions = $this->transactionService->getAllTransactions();
 
         $activeTransactions = array_filter($allTransactions, function($transaction) {
@@ -54,19 +71,22 @@ class ReportingService {
         $numberOfTransactions = count($activeTransactions);
         $totalAmount = array_sum(array_column($activeTransactions, 'amount'));
 
-        $currentDate = date('Y-m-d');
         $reportsDir = __DIR__ . '/../reports/globalReports';
-
         $csvFilePath = $reportsDir . '/global_daily_report_' . $currentDate . '.csv';
 
         $this->exportGlobalDailyReportToCSV($activeTransactions, $csvFilePath, $totalAmount, $numberOfTransactions);
 
-        return [
+        $reportData = [
             'totalAmount' => $totalAmount,
             'numberOfTransactions' => $numberOfTransactions,
             'transactions' => $activeTransactions,
             'date' => $currentDate
         ];
+
+        // Cache the report data for 5 minutes (300 seconds)
+        $this->redis->setex($cacheKey, 300, json_encode($reportData));
+
+        return $reportData;
     }
 
     private function exportGlobalDailyReportToCSV($transactions, $filePath, $totalAmount, $numberOfTransactions) {

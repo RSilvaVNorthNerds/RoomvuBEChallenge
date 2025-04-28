@@ -4,6 +4,7 @@ services:
     volumes:
       - .:/var/www
       - ./database:/var/www/src/database
+      - ./.env:/var/www/.env
     environment:
       - DB_CONNECTION=sqlite
       - DB_DATABASE=/var/www/src/database/database.sqlite
