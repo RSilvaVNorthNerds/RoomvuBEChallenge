@@ -1,2 +1,4 @@
 /vendor
 /src/database
+/src/reports/globalReports
+/src/reports/userReports
