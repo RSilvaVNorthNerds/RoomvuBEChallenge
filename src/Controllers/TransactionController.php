@@ -11,15 +11,17 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class TransactionController {
     private $transactionService;
 
-    public function __construct(TransactionService $transactionService) {
+    public function __construct() {
         $this->transactionService = new TransactionService();
     }
 
-    public function createTransaction(Request $request, Response $response): Response {
+    public function createTransaction(Request $request): Response {
+        $data = json_decode($request->getContent(), true);
+
         // Get and sanitize input data
-        $user_id = filter_var($request->request->get('user_id'), FILTER_SANITIZE_NUMBER_INT);
-        $amount = filter_var($request->request->get('amount'), FILTER_SANITIZE_NUMBER_INT);
-        $date = filter_var($request->request->get('date'), FILTER_SANITIZE_SPECIAL_CHARS);
+        $user_id = (int) filter_var($data['user_id'], FILTER_SANITIZE_NUMBER_INT);
+        $amount = (float) filter_var($data['amount'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $date = filter_var($data['date'], FILTER_SANITIZE_SPECIAL_CHARS);
 
         // Validate required fields
         if (empty($user_id) || empty($amount) || empty($date)) {
@@ -43,11 +45,16 @@ class TransactionController {
         }
 
         // Create transaction with validated and sanitized data
-        $transaction = new TransactionModel(null, (int)$user_id, (int)$amount, $date);
+        $transaction = new TransactionModel($user_id, $amount, $date);
 
         try {
-            $this->transactionService->runTransaction($transaction);
-            return new JsonResponse($transaction, Response::HTTP_CREATED);
+            $createdUser = $this->transactionService->runTransaction($transaction);
+            return new JsonResponse([
+                'user_id' => $createdUser->getUserId(),
+                'amount' => $createdUser->getAmount(),
+                'date' => $createdUser->getDate(),
+                'vanished_at' => $createdUser->getVanishedAt()
+            ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return new JsonResponse([
                 'error' => 'Failed to create transaction: ' . $e->getMessage()

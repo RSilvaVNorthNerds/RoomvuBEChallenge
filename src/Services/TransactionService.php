@@ -13,7 +13,15 @@ class TransactionService {
     }
 
     public function runTransaction(TransactionModel $transaction): TransactionModel {
-        return $this->transactionRepository->createTransaction($transaction);
+        $transaction_id = $this->transactionRepository->createTransaction($transaction);
+
+        return new TransactionModel(
+            $transaction->getUserId(),
+            $transaction->getAmount(),
+            $transaction->getDate(),
+            $transaction_id,
+            $transaction->getVanishedAt()
+        );
     }
 
     public function softDeleteTransaction(int $id): bool {

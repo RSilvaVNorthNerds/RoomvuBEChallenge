@@ -4,11 +4,11 @@
     class TransactionModel {
         private ?int $id;
         private int $user_id;
-        private int $amount;
+        private float $amount;
         private string $date;
         private ?string $vanished_at;
 
-        public function __construct(?int $id = null, int $user_id, int $amount, string $date, ?string $vanished_at = null) {
+        public function __construct(int $user_id, float $amount, string $date, ?int $id = null, ?string $vanished_at = null) {
             $this->id = $id;
             $this->user_id = $user_id;
             $this->amount = $amount;
@@ -16,7 +16,7 @@
             $this->vanished_at = $vanished_at;
         }
 
-        public function getId(): int {
+        public function getId(): ?int {
             return $this->id;
         }
 
@@ -24,7 +24,7 @@
             return $this->user_id;
         }
 
-        public function getAmount(): int {
+        public function getAmount(): float {
             return $this->amount;
         }
 

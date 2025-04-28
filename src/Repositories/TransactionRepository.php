@@ -11,35 +11,34 @@ class TransactionRepository {
     private $pdo;
 
     public function __construct() {
-        $this->pdo = Database::connect();
+        $database = Database::getInstance();
+        $database->createTables();
+        $this->pdo = $database->getConnection();
     }
 
-    public function createTransaction(TransactionModel $transaction): TransactionModel {
+    public function createTransaction(TransactionModel $transaction): string {
         try {
             $query = $this->pdo->prepare("INSERT INTO transactions (user_id, amount, date, vanished_at) VALUES (:user_id, :amount, :date, :vanished_at)");
+
             $success = $query->execute([
                 'user_id' => $transaction->getUserId(),
                 'amount' => $transaction->getAmount(),
                 'date' => $transaction->getDate(),
+                'vanished_at' => $transaction->getVanishedAt() ?? null
             ]);
 
             if (!$success) {
                 error_log("Failed to create transaction");
+                error_log(print_r($query->errorInfo(), true));
                 throw new PDOException("Failed to create transaction");
             }
 
             $transaction_id = $this->pdo->lastInsertId();
 
-            return new TransactionModel(
-                $transaction_id,
-                $transaction->getUserId(),
-                $transaction->getAmount(),
-                $transaction->getDate(),
-                $transaction->getVanishedAt()
-            );
+            return $transaction_id;
         } catch (PDOException $e) {
             error_log("PDOException in createTransaction: " . $e->getMessage());
-            throw $e; // Re-throw to be handled by the service layer
+            throw $e;
         }
     }
 
@@ -57,8 +56,7 @@ class TransactionRepository {
             return $success;
         } catch (PDOException $e) {
             error_log("PDOException: " . $e->getMessage());
-
-            return False;
+            return false;
         }
     }
 }

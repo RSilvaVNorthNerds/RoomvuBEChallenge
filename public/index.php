@@ -9,9 +9,12 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Controllers\UserController;
 use App\Controllers\TransactionController;
 use App\Controllers\ReportingController;
+use App\config\Database;
 
 $request = Request::createFromGlobals();
 $response = null;
+
+Database::getInstance()->createTables();
 
 $method = $request->getMethod();
 $path = $request->getPathInfo();
