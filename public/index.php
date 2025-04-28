@@ -21,19 +21,14 @@ $path = $request->getPathInfo();
 
 $routes = [
     'GET' => [
-        // TODO: Add get routes
+        '/generate-user-daily-report' => [ReportingController::class, 'generateUserDailyReport'],
     ],
     'POST' => [
-        // TODO: Add post routes
         '/create-transaction' => [TransactionController::class, 'createTransaction'],
         '/create-user' => [UserController::class, 'createUser'],
         '/populate-users' => [UserController::class, 'populateFakeUsers'],
     ],
-    'PUT' => [
-        // TODO: Add put routes
-    ],
     "DELETE" => [
-        // TODO: Add delete routes
         '/delete-transaction' => [TransactionController::class, 'archiveTransaction'],
     ],
 ];

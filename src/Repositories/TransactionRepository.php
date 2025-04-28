@@ -60,7 +60,7 @@ class TransactionRepository {
         }
     }
 
-    public function getTransactionById(int $id): TransactionModel {
+    public function getSingleTransactionById(int $id): TransactionModel {
         $query = $this->pdo->prepare("SELECT * FROM transactions WHERE id = :id");
         $query->execute(['id' => $id]);
         
@@ -71,6 +71,13 @@ class TransactionRepository {
         }
 
         return new TransactionModel($transaction['user_id'], $transaction['amount'], $transaction['date'], $transaction['id'], $transaction['vanished_at']);
+    }
+
+    public function getAllTransactionsByUserId(int $userId): array {
+        $query = $this->pdo->prepare("SELECT * FROM transactions WHERE user_id = :user_id");
+        $query->execute(['user_id' => $userId]);
+        
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
