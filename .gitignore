@@ -1,4 +1,8 @@
+#Directories
 /vendor
 /src/reports/globalReports
 /src/reports/userReports
 /database
+
+#Files
+.env
