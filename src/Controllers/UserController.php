@@ -17,10 +17,19 @@ class UserController {
 
     public function createUser(Request $request): Response {
         $data = json_decode($request->getContent(), true);
+
+        $name = filter_var($data['name'], FILTER_SANITIZE_SPECIAL_CHARS);
+        $credit = (float) filter_var($data['credit'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+
+        if(empty($name) || empty($credit)) {
+            return new JsonResponse([
+                'error' => 'Missing required fields: name and credit are required'
+            ], Response::HTTP_BAD_REQUEST);
+        }
         
         $user = new UserModel(
-            name: $data['name'],
-            credit: $data['credit']
+            name: $name,
+            credit: $credit
         );
 
         $this->userService->createUser($user);

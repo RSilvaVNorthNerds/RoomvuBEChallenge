@@ -36,7 +36,7 @@ class UserRepository {
             return null;
         }
 
-        return new UserModel($user['id'], $user['name'], $user['credit']);
+        return new UserModel( $user['name'], $user['credit'], $user['id']);
     }
     
     public function updateCredit(UserModel $user): void {

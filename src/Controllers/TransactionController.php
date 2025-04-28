@@ -55,19 +55,6 @@ class TransactionController {
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        //check if user has enough balance to make the transaction if amount is negative
-        if($amount < 0) {
-            $user_balance = $user->getCredit();
-
-            $new_balance = $user_balance + $amount;
-
-            if($new_balance < 0) {
-                return new JsonResponse([
-                    'error' => 'User has insufficient balance, transaction failed'
-                ], Response::HTTP_BAD_REQUEST);
-            }
-        }
-
         $transaction = new TransactionModel($user_id, $amount, $date);
 
         try {
