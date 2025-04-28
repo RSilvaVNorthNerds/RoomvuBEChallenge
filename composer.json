@@ -18,8 +18,14 @@
     }
   },
   "scripts": {
-    "start:dev": "php -S localhost:8000 -t public",
+    "start:dev": "docker-compose up --build",
+    "stop:dev": "docker-compose down",
+    "logs:dev": "docker-compose logs -f",
+    "restart:dev": "docker-compose restart",
     "test": "phpunit --bootstrap tests/autoload.php tests/",
     "test:coverage": "phpunit --bootstrap tests/autoload.php tests/ --coverage-html coverage"
+  },
+  "config": {
+    "process-timeout": 0
   }
 }

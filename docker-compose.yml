@@ -1,32 +1,31 @@
-version: "3.8"
-
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    deploy:
-      replicas: 3
-      restart_policy:
-        condition: on-failure
-      update_config:
-        parallelism: 1
-        delay: 10s
-    ports:
-      - "8000:8000"
+    build: .
     volumes:
       - .:/var/www
-      - ./database:/var/www/database
+      - ./database:/var/www/src/database
     environment:
       - DB_CONNECTION=sqlite
-      - DB_DATABASE=/var/www/database/database.sqlite
+      - DB_DATABASE=/var/www/src/database/database.sqlite
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      test: ["CMD", "php", "artisan", "queue:work", "--once"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    command: >
-      sh -c "mkdir -p database && 
-             touch database/database.sqlite && 
-             php -S 0.0.0.0:8000 -t public"
+    command: php -S 0.0.0.0:8000 -t public
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
