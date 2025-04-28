@@ -38,7 +38,17 @@ class UserController {
     }
 
     public function populateFakeUsers(Request $request): Response {
-        $this->userService->populateFakeUsers($request->request->get('amount'));
+        $data = json_decode($request->getContent(), true);
+
+        $amount = (int) filter_var($data['amount'], FILTER_SANITIZE_NUMBER_INT);
+
+        if(empty($amount)) {
+            return new JsonResponse([
+                'error' => 'Amount is required'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->userService->populateFakeUsers($amount);
 
         return new JsonResponse(['message' => 'Users populated']);
     }
