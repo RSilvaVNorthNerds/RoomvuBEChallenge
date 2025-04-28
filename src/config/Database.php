@@ -31,7 +31,7 @@ class Database {
     }
 
     public function createTables() {
-        $sql = "
+        $transaction_sql = "
             CREATE TABLE IF NOT EXISTS transactions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
@@ -41,8 +41,15 @@ class Database {
             );
         ";
 
+        $user_sql = "
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                credit REAL NOT NULL);
+        ";
         try {
-            $this->connection->exec($sql);
+            $this->connection->exec($user_sql);
+            $this->connection->exec($transaction_sql);
         } catch (PDOException $e) {
             die("Error creating tables: " . $e->getMessage());
         }

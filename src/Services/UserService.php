@@ -9,8 +9,8 @@ use Faker\Factory as FakerFactory;
 class UserService {
     private $userRepository;
 
-    public function __construct(UserRepository $userRepository) {
-        $this->userRepository = $userRepository;
+    public function __construct() {
+        $this->userRepository = new UserRepository();
     }
 
     public function createUser(UserModel $user): void {
@@ -19,7 +19,6 @@ class UserService {
     
     public function populateFakeUsers(int $amount): void {
         $faker = FakerFactory::create();
-        $users = [];
         
         for ($i = 0; $i < $amount; $i++) {
             $user = new UserModel(
@@ -27,9 +26,15 @@ class UserService {
                 credit: $faker->randomFloat(2,0,1000),
             );
 
-            $users[] = $this->createUser($user);
+            $this->userRepository->createUser($user);
         }
+    }
 
-        return $users;
+    public function getUserBalance(int $userId): float {
+        return $this->userRepository->getUserBalance($userId);
+    }
+
+    public function getUserById(int $userId): ?UserModel {
+        return $this->userRepository->getUserById($userId);
     }
 }

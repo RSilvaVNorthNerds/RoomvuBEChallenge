@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Services\TransactionService;
+use App\Services\UserService;
 use App\Models\TransactionModel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,9 +11,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class TransactionController {
     private $transactionService;
-
+    private $userService;
     public function __construct() {
         $this->transactionService = new TransactionService();
+        $this->userService = new UserService();
     }
 
     public function createTransaction(Request $request): Response {
@@ -44,7 +46,28 @@ class TransactionController {
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        // Create transaction with validated and sanitized data
+
+        //check if user exists
+        $user = $this->userService->getUserById($user_id);
+        if(!$user) {
+            return new JsonResponse([
+                'error' => 'User not found, could not make transaction'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        //check if user has enough balance to make the transaction if amount is negative
+        if($amount < 0) {
+            $user_balance = $user->getCredit();
+
+            $new_balance = $user_balance + $amount;
+
+            if($new_balance < 0) {
+                return new JsonResponse([
+                    'error' => 'User has insufficient balance, transaction failed'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        }
+
         $transaction = new TransactionModel($user_id, $amount, $date);
 
         try {

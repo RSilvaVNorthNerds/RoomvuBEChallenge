@@ -3,21 +3,25 @@
 namespace App\Repositories;
 
 use App\Models\UserModel;
-use PDO;
+use App\Config\Database;
 
 class UserRepository {
     private $pdo;
 
-    public function __construct($pdo) {
-        $this->pdo = $pdo;
+    public function __construct() {
+        $database = Database::getInstance();
+        $database->createTables();
+        $this->pdo = $database->getConnection();
     }
 
-    public function createUser(UserModel $user): void {
+    public function createUser(UserModel $user): string {
         $query = $this->pdo->prepare("INSERT INTO users (name, credit) VALUES (:name, :credit)");
         $query->execute([
             'name' => $user->getName(),
             'credit' => $user->getCredit()
         ]);
+
+        return $this->pdo->lastInsertId();
     }
 
     public function getUserById(int $id): ?UserModel {
@@ -42,5 +46,15 @@ class UserRepository {
             'id' => $user->getId()
         ]);
     }
-    
+
+    public function getUserBalance(int $userId): float {
+        $query = $this->pdo->prepare("SELECT credit FROM users WHERE id = :id");
+        $query->execute([
+            'id' => $userId
+        ]);
+
+        $user = $query->fetch($this->pdo::FETCH_ASSOC);
+
+        return $user['credit'];
+    }
 }
