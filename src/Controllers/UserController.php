@@ -11,14 +11,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class UserController {
     private $userService;
 
-    public function __construct(UserService $userService) {
-        $this->userService = $userService;
+    public function __construct() {
+        $this->userService = new UserService();
     }
 
-    public function createUser(Request $request, Response $response): Response {
+    public function createUser(Request $request): Response {
+        $data = json_decode($request->getContent(), true);
+        
         $user = new UserModel(
-            name: $request->request->get('name'),
-            credit: $request->request->get('credit')
+            name: $data['name'],
+            credit: $data['credit']
         );
 
         $this->userService->createUser($user);
@@ -26,7 +28,7 @@ class UserController {
         return new JsonResponse($user);
     }
 
-    public function populateFakeUsers(Request $request, Response $response): Response {
+    public function populateFakeUsers(Request $request): Response {
         $this->userService->populateFakeUsers($request->request->get('amount'));
 
         return new JsonResponse(['message' => 'Users populated']);

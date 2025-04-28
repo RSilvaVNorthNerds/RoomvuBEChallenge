@@ -7,7 +7,7 @@ class UserModel {
     private string $name;
     private float $credit;
 
-    public function __construct(?int $id = null, string $name, float $credit) {
+    public function __construct(string $name, float $credit, ?int $id = null) {
         $this->id = $id;
         $this->name = $name;
         $this->credit = $credit;
