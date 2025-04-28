@@ -12,20 +12,65 @@ class TransactionController {
     private $transactionService;
 
     public function __construct(TransactionService $transactionService) {
-        $this->transactionService = $transactionService;
+        $this->transactionService = new TransactionService();
     }
 
     public function createTransaction(Request $request, Response $response): Response {
-        $transaction = new TransactionModel(null, $request->request->get('amount'), $request->request->get('type'), $request->request->get('user_id'));
+        // Get and sanitize input data
+        $user_id = filter_var($request->request->get('user_id'), FILTER_SANITIZE_NUMBER_INT);
+        $amount = filter_var($request->request->get('amount'), FILTER_SANITIZE_NUMBER_INT);
+        $date = filter_var($request->request->get('date'), FILTER_SANITIZE_SPECIAL_CHARS);
 
-        $this->transactionService->runTransaction($transaction);
+        // Validate required fields
+        if (empty($user_id) || empty($amount) || empty($date)) {
+            return new JsonResponse([
+                'error' => 'Missing required fields: user_id, amount, and date are required'
+            ], Response::HTTP_BAD_REQUEST);
+        }
 
-        return new JsonResponse($transaction);
+        // Validate data types
+        if (!is_numeric($user_id) || !is_numeric($amount)) {
+            return new JsonResponse([
+                'error' => 'Invalid data types: user_id and amount must be numeric'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Validate date format (assuming YYYY-MM-DD format)
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return new JsonResponse([
+                'error' => 'Invalid date format. Please use YYYY-MM-DD format'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Create transaction with validated and sanitized data
+        $transaction = new TransactionModel(null, (int)$user_id, (int)$amount, $date);
+
+        try {
+            $this->transactionService->runTransaction($transaction);
+            return new JsonResponse($transaction, Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Failed to create transaction: ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public function archiveTransaction(Request $request, Response $response): Response {
-        $this->transactionService->softDeleteTransaction($request->request->get('id'));
+        $id = filter_var($request->request->get('id'), FILTER_SANITIZE_NUMBER_INT);
 
-        return new JsonResponse(['message' => 'Transaction archived']);
+        if (empty($id)) {
+            return new JsonResponse([
+                'error' => 'Transaction ID is required'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $this->transactionService->softDeleteTransaction($id);
+            return new JsonResponse(['message' => 'Transaction archived']);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Failed to archive transaction: ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

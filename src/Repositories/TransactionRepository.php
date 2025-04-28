@@ -5,12 +5,13 @@ namespace App\Repositories;
 use App\Models\TransactionModel;
 use PDO;
 use PDOException;
+use App\Config\Database;
 
 class TransactionRepository {
     private $pdo;
 
-    public function __construct($pdo) {
-        $this->pdo = $pdo;
+    public function __construct() {
+        $this->pdo = Database::connect();
     }
 
     public function createTransaction(TransactionModel $transaction): TransactionModel {

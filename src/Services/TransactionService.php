@@ -8,8 +8,8 @@ use App\Repositories\TransactionRepository;
 class TransactionService {
     private $transactionRepository;
 
-    public function __construct(TransactionRepository $transactionRepository) {
-        $this->transactionRepository = $transactionRepository;
+    public function __construct() {
+        $this->transactionRepository = new TransactionRepository();
     }
 
     public function runTransaction(TransactionModel $transaction): TransactionModel {
