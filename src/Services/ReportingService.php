@@ -47,4 +47,35 @@ class ReportingService {
         fputcsv($csvFile, ['Total', $totalAmount, "Transactions: $numberOfTransactions"], ",", "\"", "\\");
         fclose($csvFile);
     }
+
+    public function generateGlobalDailyReport() {
+        $allTransactions = $this->transactionService->getAllTransactions();
+
+        $activeTransactions = array_filter($allTransactions, function($transaction) {
+            return $transaction['vanished_at'] === null;
+        });
+
+        $numberOfTransactions = count($activeTransactions);
+        $totalAmount = array_sum(array_column($activeTransactions, 'amount'));
+
+        $currentDate = date('Y-m-d');
+        $reportsDir = __DIR__ . '/../reports/globalReports';
+
+        $csvFilePath = $reportsDir . '/global_daily_report_' . $currentDate . '.csv';
+
+        $csvFile = fopen($csvFilePath, 'w');
+
+        if ($csvFile === false) {
+            throw new \Exception("Failed to open file for writing. Check path and permissions.");
+        }
+
+        fputcsv($csvFile, ['Date', 'Amount'], ",", "\"", "\\");
+        
+        foreach ($activeTransactions as $transaction) {
+            fputcsv($csvFile, [$transaction['date'], $transaction['amount']], ",", "\"", "\\");
+        }
+
+        fputcsv($csvFile, ['Total', $totalAmount, "Transactions: $numberOfTransactions"], ",", "\"", "\\");
+        fclose($csvFile);
+    }
 }

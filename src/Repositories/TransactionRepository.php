@@ -76,7 +76,13 @@ class TransactionRepository {
     public function getAllTransactionsByUserId(int $userId): array {
         $query = $this->pdo->prepare("SELECT * FROM transactions WHERE user_id = :user_id");
         $query->execute(['user_id' => $userId]);
-        
+
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getAllTransactions(): array {
+        $query = $this->pdo->prepare("SELECT * FROM transactions");
+        $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -59,4 +59,8 @@ class TransactionService {
     public function getAllTransactionsByUserId(int $userId): array {
         return $this->transactionRepository->getAllTransactionsByUserId($userId);
     }
+
+    public function getAllTransactions(): array {
+        return $this->transactionRepository->getAllTransactions();
+    }
 }

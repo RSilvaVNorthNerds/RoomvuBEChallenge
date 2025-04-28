@@ -35,4 +35,15 @@ class ReportingController {
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function generateGlobalDailyReport(Request $request): Response {
+        try {
+            $this->reportingService->generateGlobalDailyReport();
+            return new JsonResponse("Global daily report generated successfully");
+        } catch(\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Failed to get global daily report: ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

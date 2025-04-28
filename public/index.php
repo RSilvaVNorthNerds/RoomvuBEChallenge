@@ -22,6 +22,7 @@ $path = $request->getPathInfo();
 $routes = [
     'GET' => [
         '/generate-user-daily-report' => [ReportingController::class, 'generateUserDailyReport'],
+        '/generate-global-daily-report' => [ReportingController::class, 'generateGlobalDailyReport'],
     ],
     'POST' => [
         '/create-transaction' => [TransactionController::class, 'createTransaction'],
