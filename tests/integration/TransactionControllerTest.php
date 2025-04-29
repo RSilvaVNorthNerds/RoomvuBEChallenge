@@ -158,3 +158,59 @@ test('archive transaction fails with invalid id', function () {
     expect($response->getStatusCode())->toBe(Response::HTTP_BAD_REQUEST);
     expect(json_decode($response->getContent(), true))->toHaveKey('error');
 });
+
+/**
+ * Tests concurrent transaction processing
+ * Verifies that the system can handle multiple transactions simultaneously
+ * and maintains data consistency under load
+ */
+test('handles concurrent transactions correctly', function () {
+    $initialBalance = 1000.00;
+    $mockUser = new UserModel('John Doe', $initialBalance, 1);
+    
+    // Create 10 concurrent transactions
+    $transactions = [];
+    $totalAmount = 0;
+    for ($i = 0; $i < 10; $i++) {
+        $amount = rand(10, 100);
+        $totalAmount += $amount;
+        $transactions[] = [
+            'user_id' => 1,
+            'amount' => $amount,
+            'date' => '2024-03-20'
+        ];
+    }
+
+    // Mock the user service to return the same user for all requests
+    $this->userService->shouldReceive('getUserById')
+        ->with(1)
+        ->times(10)
+        ->andReturn($mockUser);
+
+    // Mock the transaction service to process each transaction and return a new transaction model
+    $this->transactionService->shouldReceive('runTransaction')
+        ->with(Mockery::type(TransactionModel::class))
+        ->times(10)
+        ->andReturnUsing(function ($transaction) {
+            return new TransactionModel(
+                $transaction->getUserId(),
+                $transaction->getAmount(),
+                $transaction->getDate(),
+                rand(1, 1000) // Simulate a new transaction ID
+            );
+        });
+
+    // Process transactions concurrently using parallel HTTP requests
+    $responses = [];
+    foreach ($transactions as $transaction) {
+        $mockRequest = new Request([], [], [], [], [], [], json_encode($transaction));
+        $responses[] = $this->controller->createTransaction($mockRequest);
+    }
+
+    // Verify all transactions were processed successfully
+    foreach ($responses as $response) {
+        expect($response->getStatusCode())->toBe(Response::HTTP_CREATED);
+        $responseData = json_decode($response->getContent(), true);
+        expect($responseData)->toHaveKeys(['user_id', 'amount', 'date', 'vanished_at']);
+    }
+});

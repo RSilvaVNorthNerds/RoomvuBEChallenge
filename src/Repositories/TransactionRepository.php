@@ -15,28 +15,46 @@ class TransactionRepository {
         $this->pdo = $database->getConnection();
     }
 
-    public function createTransaction(TransactionModel $transaction): string {
+    public function createTransaction(TransactionModel $transaction, float $newCredit): TransactionModel {
         try {
-            $query = $this->pdo->prepare("INSERT INTO transactions (user_id, amount, date, vanished_at) VALUES (:user_id, :amount, :date, :vanished_at)");
-
-            $success = $query->execute([
+            $this->pdo->beginTransaction();
+    
+            // Lock user
+            $this->pdo->prepare("SELECT * FROM users WHERE id = :id FOR UPDATE")
+                ->execute(['id' => $transaction->getUserId()]);
+    
+            // Update credit
+            $this->pdo->prepare("UPDATE users SET credit = :credit WHERE id = :id")
+                ->execute([
+                    'credit' => $newCredit,
+                    'id' => $transaction->getUserId(),
+                ]);
+    
+            // Insert transaction
+            $query = $this->pdo->prepare("
+                INSERT INTO transactions (user_id, amount, date, vanished_at)
+                VALUES (:user_id, :amount, :date, :vanished_at)
+            ");
+            $query->execute([
                 'user_id' => $transaction->getUserId(),
                 'amount' => $transaction->getAmount(),
                 'date' => $transaction->getDate(),
-                'vanished_at' => $transaction->getVanishedAt() ?? null
+                'vanished_at' => $transaction->getVanishedAt(),
             ]);
-
-            if (!$success) {
-                error_log("Failed to create transaction");
-                error_log(print_r($query->errorInfo(), true));
-                throw new PDOException("Failed to create transaction");
-            }
-
-            $transaction_id = $this->pdo->lastInsertId();
-
-            return $transaction_id;
-        } catch (PDOException $e) {
-            error_log("PDOException in createTransaction: " . $e->getMessage());
+    
+            $transactionId = $this->pdo->lastInsertId();
+            $this->pdo->commit();
+    
+            return new TransactionModel(
+                $transaction->getUserId(),
+                $transaction->getAmount(),
+                $transaction->getDate(),
+                $transactionId,
+                $transaction->getVanishedAt() ?? null
+            );
+    
+        } catch (\Exception $e) {
+            $this->pdo->rollBack();
             throw $e;
         }
     }

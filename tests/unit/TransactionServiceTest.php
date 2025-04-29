@@ -27,10 +27,11 @@ test('runTransaction successfully processes a valid transaction', function () {
     $mockUserId = 1;
     $mockAmount = 100;
     $mockDate = (new DateTime())->format('Y-m-d');
-    $mockTransactionId = '1';
+    $mockTransactionId = 1;
     
     $mockUser = new UserModel('John Doe', 500, $mockUserId);
     $mockTransaction = new TransactionModel($mockUserId, $mockAmount, $mockDate);
+    $expectedTransaction = new TransactionModel($mockUserId, $mockAmount + $mockUser->getCredit(), $mockDate, $mockTransactionId);
     
     $this->userRepository->shouldReceive('getUserById')
         ->once()
@@ -39,17 +40,14 @@ test('runTransaction successfully processes a valid transaction', function () {
         
     $this->transactionRepository->shouldReceive('createTransaction')
         ->once()
-        ->with($mockTransaction)
-        ->andReturn($mockTransactionId);
-        
-    $this->userRepository->shouldReceive('updateCredit')
-        ->once()
-        ->with($mockUser);
+        ->with($mockTransaction, $mockUser->getCredit() + $mockAmount)
+        ->andReturn($expectedTransaction);
     
     $result = $this->transactionService->runTransaction($mockTransaction);
     
-    expect($result->getId())->toBe((int) $mockTransactionId)
-        ->and($result->getUserId())->toBe($mockUserId);
+    expect($result->getId())->toBe($mockTransactionId)
+        ->and($result->getUserId())->toBe($mockUserId)
+        ->and($result->getAmount())->toBe($mockAmount + $mockUser->getCredit());
 });
 
 /**

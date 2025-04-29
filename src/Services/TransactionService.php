@@ -17,28 +17,18 @@ class TransactionService {
 
     public function runTransaction(TransactionModel $transaction): TransactionModel {
         $user = $this->userRepository->getUserById($transaction->getUserId());
-        $amount = $transaction->getAmount();
-
-        //check if user has enough balance to make the transaction if amount is negative
-        $isValidTransaction = $this->checkSufficientBalance($user, $amount);
-
-        if(!$isValidTransaction) {
-            throw new \Exception('User has insufficient balance, transaction failed');
+    
+        if (!$user) {
+            throw new \Exception("User not found");
         }
-        
-        $transaction_id = $this->transactionRepository->createTransaction($transaction);
-
-        $user->setCredit($user->getCredit() + $transaction->getAmount());
-
-        $this->userRepository->updateCredit($user);
-
-        return new TransactionModel(
-            $transaction->getUserId(),
-            $transaction->getAmount(),
-            $transaction->getDate(),
-            $transaction_id,
-            $transaction->getVanishedAt()
-        );
+    
+        $newCredit = $user->getCredit() + $transaction->getAmount();
+    
+        if ($newCredit < 0) {
+            throw new \Exception("User has insufficient balance, transaction failed");
+        }
+    
+        return $this->transactionRepository->createTransaction($transaction, $newCredit);
     }
 
     public function softDeleteTransaction(int $id): bool {
