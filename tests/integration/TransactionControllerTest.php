@@ -168,14 +168,15 @@ test('handles concurrent transactions correctly', function () {
     $initialBalance = 1000.00;
     $mockUser = new UserModel('John Doe', $initialBalance, 1);
     
-    // Create 10 concurrent transactions
     $transactions = [];
     $totalAmount = 0;
-    for ($i = 0; $i < 10; $i++) {
+    $totalTransactions = 2000;
+
+    for ($i = 0; $i < $totalTransactions; $i++) {
         $amount = rand(10, 100);
         $totalAmount += $amount;
         $transactions[] = [
-            'user_id' => 1,
+            'user_id' => $mockUser->getId(),
             'amount' => $amount,
             'date' => '2024-03-20'
         ];
@@ -183,24 +184,23 @@ test('handles concurrent transactions correctly', function () {
 
     // Mock the user service to return the same user for all requests
     $this->userService->shouldReceive('getUserById')
-        ->with(1)
-        ->times(10)
+        ->with($mockUser->getId())
+        ->times($totalTransactions)
         ->andReturn($mockUser);
 
     // Mock the transaction service to process each transaction and return a new transaction model
     $this->transactionService->shouldReceive('runTransaction')
         ->with(Mockery::type(TransactionModel::class))
-        ->times(10)
+        ->times($totalTransactions)
         ->andReturnUsing(function ($transaction) {
             return new TransactionModel(
                 $transaction->getUserId(),
                 $transaction->getAmount(),
                 $transaction->getDate(),
-                rand(1, 1000) // Simulate a new transaction ID
+                rand(1, 1000)
             );
         });
 
-    // Process transactions concurrently using parallel HTTP requests
     $responses = [];
     foreach ($transactions as $transaction) {
         $mockRequest = new Request([], [], [], [], [], [], json_encode($transaction));
