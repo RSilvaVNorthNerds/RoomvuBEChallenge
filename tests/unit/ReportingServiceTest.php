@@ -21,6 +21,14 @@ afterEach(function () {
     Mockery::close();
 });
 
+/**
+ * Tests that generateUserDailyReport returns the correct data structure with proper calculations.
+ * Verifies that:
+ * - The returned data has all required fields
+ * - Total amount is correctly calculated (excluding vanished transactions)
+ * - Transaction count is accurate (excluding vanished transactions)
+ * - User ID and date are properly set
+ */
 test('generateUserDailyReport returns correct data structure', function () {
     $mockUserId = 1;
     $mockTransactions = [
@@ -44,6 +52,12 @@ test('generateUserDailyReport returns correct data structure', function () {
         ->and($result['date'])->toBe(date('Y-m-d'));
 });
 
+/**
+ * Tests the caching functionality of generateGlobalDailyReport.
+ * Verifies that when cached data exists for the current date:
+ * - The cached data is returned instead of generating a new report
+ * - No unnecessary database calls are made
+ */
 test('generateGlobalDailyReport returns cached data when available', function () {
     $mockCurrentDate = date('Y-m-d');
     $mockCacheKey = "global_daily_report_{$mockCurrentDate}";
@@ -66,6 +80,13 @@ test('generateGlobalDailyReport returns cached data when available', function ()
     expect($result)->toBe($mockCachedData);
 });
 
+/**
+ * Tests the report generation functionality when there is no cached data.
+ * Verifies that:
+ * - A new report is generated when cache is empty
+ * - The report contains correct calculations for total amount and transaction count
+ * - The generated report is properly cached for future use
+ */
 test('generateGlobalDailyReport generates new report when cache miss', function () {
     $mockCurrentDate = date('Y-m-d');
     $mockCacheKey = "global_daily_report_{$mockCurrentDate}";
@@ -97,6 +118,13 @@ test('generateGlobalDailyReport generates new report when cache miss', function 
         ->and($result['date'])->toBe($mockCurrentDate);
 });
 
+/**
+ * Tests the CSV export functionality for user daily reports.
+ * Verifies that:
+ * - A CSV file is created in the correct directory
+ * - The file contains the correct report data
+ * - The file is named according to the expected format
+ */
 test('exportUserDailyReportToCSV creates file with correct content', function () {
     $mockUserId = 1;
     $mockTransactions = [
@@ -122,6 +150,14 @@ test('exportUserDailyReportToCSV creates file with correct content', function ()
     }
 });
 
+/**
+ * Tests the CSV export functionality for global daily reports.
+ * Verifies that:
+ * - A CSV file is created in the correct directory
+ * - The file contains the correct report data
+ * - The file is named according to the expected format
+ * - The report is properly generated when cache is empty
+ */
 test('exportGlobalDailyReportToCSV creates file with correct content', function () {
     $mockTransactions = [
         ['id' => 1, 'amount' => 100, 'date' => '2024-01-01', 'vanished_at' => null],

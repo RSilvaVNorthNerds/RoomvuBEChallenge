@@ -16,6 +16,13 @@ afterEach(function () {
     Mockery::close();
 });
 
+/**
+ * Tests successful transaction processing flow:
+ * - Verifies user exists and has sufficient balance
+ * - Creates transaction record
+ * - Updates user's credit balance
+ * - Returns transaction with correct ID
+ */
 test('runTransaction successfully processes a valid transaction', function () {
     $mockUserId = 1;
     $mockAmount = 100;
@@ -45,6 +52,11 @@ test('runTransaction successfully processes a valid transaction', function () {
         ->and($result->getUserId())->toBe($mockUserId);
 });
 
+/**
+ * Tests transaction failure when user has insufficient balance:
+ * - Verifies exception is thrown when withdrawal amount exceeds available credit
+ * - Ensures transaction is not processed when balance check fails
+ */
 test('runTransaction throws exception when user has insufficient balance', function () {
     $mockUserId = 1;
     $mockAmount = -600; // Negative amount for withdrawal
@@ -62,6 +74,12 @@ test('runTransaction throws exception when user has insufficient balance', funct
         ->toThrow(\Exception::class, 'User has insufficient balance, transaction failed');
 });
 
+/**
+ * Tests successful soft deletion of a transaction:
+ * - Verifies transaction exists before deletion
+ * - Performs soft delete operation
+ * - Confirms deletion was successful
+ */
 test('softDeleteTransaction successfully deletes an existing transaction', function () {
     $mockTransactionId = 1;
     $mockDate = (new DateTime())->format('Y-m-d H:i:s');
@@ -82,6 +100,11 @@ test('softDeleteTransaction successfully deletes an existing transaction', funct
     expect($result)->toBeTrue();
 });
 
+/**
+ * Tests error handling for non-existent transactions:
+ * - Verifies exception is thrown when attempting to delete non-existent transaction
+ * - Ensures proper error message is returned
+ */
 test('softDeleteTransaction throws exception when transaction not found', function () {
     $mockTransactionId = 999;
     
@@ -94,6 +117,12 @@ test('softDeleteTransaction throws exception when transaction not found', functi
         ->toThrow(\Exception::class, 'Transaction of the provided id was not found');
 });
 
+/**
+ * Tests retrieval of user-specific transactions:
+ * - Verifies all transactions for a specific user are returned
+ * - Confirms correct number of transactions are retrieved
+ * - Ensures transaction data matches expected format
+ */
 test('getAllTransactionsByUserId returns transactions for specific user', function () {
     $mockUserId = 1;
     $mockDate = (new DateTime())->format('Y-m-d H:i:s');
@@ -113,6 +142,12 @@ test('getAllTransactionsByUserId returns transactions for specific user', functi
         ->and(count($result))->toBe(2);
 });
 
+/**
+ * Tests retrieval of all transactions in the system:
+ * - Verifies all transactions are returned regardless of user
+ * - Confirms correct number of transactions are retrieved
+ * - Ensures transaction data matches expected format
+ */
 test('getAllTransactions returns all transactions', function () {
     $mockDate = (new DateTime())->format('Y-m-d H:i:s');
     $mockTransactions = [

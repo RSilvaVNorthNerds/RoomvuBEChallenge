@@ -15,6 +15,11 @@ afterEach(function () {
     Mockery::close();
 });
 
+/**
+ * Tests successful user creation with valid input data
+ * Verifies that the controller properly handles valid user data and returns appropriate response
+ * Ensures the service is called correctly and response contains expected user data
+ */
 test('create user successfully', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'name' => 'John Doe',
@@ -34,6 +39,11 @@ test('create user successfully', function () {
         ->credit->toBe(100.5);
 });
 
+/**
+ * Tests user creation validation with missing required fields
+ * Verifies that the controller properly handles invalid input by returning appropriate error response
+ * Ensures validation prevents creation of users without required name and credit fields
+ */
 test('create user fails with missing required fields', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'name' => ''
@@ -47,6 +57,11 @@ test('create user fails with missing required fields', function () {
         ->error->toBe('Missing required fields: name and credit are required');
 });
 
+/**
+ * Tests successful population of fake users with valid amount
+ * Verifies that the controller properly handles the fake user population request
+ * Ensures the service is called with correct amount and returns success response
+ */
 test('populate fake users successfully', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'amount' => 5
@@ -64,6 +79,11 @@ test('populate fake users successfully', function () {
         ->message->toBe('Users populated');
 });
 
+/**
+ * Tests fake user population validation with missing amount
+ * Verifies that the controller properly handles missing amount parameter
+ * Ensures validation prevents population without specifying number of users to create
+ */
 test('populate fake users fails with missing amount', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([]));
 

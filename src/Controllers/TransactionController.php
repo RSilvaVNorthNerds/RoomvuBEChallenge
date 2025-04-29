@@ -39,7 +39,6 @@ class TransactionController {
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        // Validate date format (assuming YYYY-MM-DD format)
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             return new JsonResponse([
                 'error' => 'Invalid date format. Please use YYYY-MM-DD format'

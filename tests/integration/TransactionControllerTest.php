@@ -18,6 +18,11 @@ afterEach(function () {
     Mockery::close();
 });
 
+/**
+ * Tests successful transaction creation with valid data
+ * Verifies that a transaction can be created when all required fields are present and valid,
+ * and that the response contains the correct transaction details
+ */
 test('create transaction successfully', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'user_id' => 1,
@@ -50,6 +55,10 @@ test('create transaction successfully', function () {
     ]);
 });
 
+/**
+ * Tests transaction creation failure when required fields are missing
+ * Verifies that the API returns a proper error response when essential data is not provided
+ */
 test('create transaction fails with missing required fields', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'user_id' => 1,
@@ -62,6 +71,10 @@ test('create transaction fails with missing required fields', function () {
     expect(json_decode($response->getContent(), true))->toHaveKey('error');
 });
 
+/**
+ * Tests transaction creation failure with invalid date format
+ * Verifies that the API properly validates date format and returns an error for invalid dates
+ */
 test('create transaction fails with invalid date format', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'user_id' => 1,
@@ -75,6 +88,10 @@ test('create transaction fails with invalid date format', function () {
     expect(json_decode($response->getContent(), true))->toHaveKey('error');
 });
 
+/**
+ * Tests transaction creation failure for non-existent user
+ * Verifies that the API prevents transactions from being created for users that don't exist
+ */
 test('create transaction fails when user does not exist', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'user_id' => 999,
@@ -93,6 +110,10 @@ test('create transaction fails when user does not exist', function () {
     expect(json_decode($response->getContent(), true))->toHaveKey('error');
 });
 
+/**
+ * Tests successful transaction archiving
+ * Verifies that a transaction can be properly archived (soft deleted) when a valid ID is provided
+ */
 test('archive transaction successfully', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'id' => 1
@@ -110,6 +131,10 @@ test('archive transaction successfully', function () {
     ]);
 });
 
+/**
+ * Tests transaction archiving failure when ID is missing
+ * Verifies that the API returns an error when attempting to archive without providing an ID
+ */
 test('archive transaction fails with missing id', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([]));
 
@@ -119,6 +144,10 @@ test('archive transaction fails with missing id', function () {
     expect(json_decode($response->getContent(), true))->toHaveKey('error');
 });
 
+/**
+ * Tests transaction archiving failure with invalid ID format
+ * Verifies that the API properly validates the ID format and returns an error for invalid IDs
+ */
 test('archive transaction fails with invalid id', function () {
     $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'id' => 'invalid'
