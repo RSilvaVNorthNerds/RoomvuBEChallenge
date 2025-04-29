@@ -21,9 +21,15 @@ class UserController {
         $name = filter_var($data['name'], FILTER_SANITIZE_SPECIAL_CHARS);
         $credit = (float) filter_var($data['credit'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
-        if(empty($name) || empty($credit)) {
+        if(!isset($data['name']) || !isset($data['credit'])) {
             return new JsonResponse([
                 'error' => 'Missing required fields: name and credit are required'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+        
+        if(empty($name)) {
+            return new JsonResponse([
+                'error' => 'Name cannot be empty'
             ], Response::HTTP_BAD_REQUEST);
         }
         

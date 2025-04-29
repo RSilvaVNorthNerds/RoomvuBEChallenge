@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\TransactionModel;
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
+use App\Models\UserModel;
 
 class TransactionService {
     private $transactionRepository;
@@ -19,14 +20,10 @@ class TransactionService {
         $amount = $transaction->getAmount();
 
         //check if user has enough balance to make the transaction if amount is negative
-        if($amount < 0) {
-            $user_balance = $user->getCredit();
+        $isValidTransaction = $this->checkSufficientBalance($user, $amount);
 
-            $new_balance = $user_balance + $amount;
-
-            if($new_balance < 0) {
-                throw new \Exception('User has insufficient balance, transaction failed');
-            }
+        if(!$isValidTransaction) {
+            throw new \Exception('User has insufficient balance, transaction failed');
         }
         
         $transaction_id = $this->transactionRepository->createTransaction($transaction);
@@ -62,5 +59,13 @@ class TransactionService {
 
     public function getAllTransactions(): array {
         return $this->transactionRepository->getAllTransactions();
+    }
+
+    private function checkSufficientBalance(UserModel $user, float $amount): bool {
+        $user_balance = $user->getCredit();
+
+        $new_balance = $user_balance + $amount;
+
+        return $new_balance >= 0;
     }
 }
