@@ -19,18 +19,12 @@ class TransactionRepository {
         try {
             $this->pdo->beginTransaction();
     
-            // Lock user
-            $this->pdo->prepare("SELECT * FROM users WHERE id = :id FOR UPDATE")
-                ->execute(['id' => $transaction->getUserId()]);
-    
-            // Update credit
             $this->pdo->prepare("UPDATE users SET credit = :credit WHERE id = :id")
                 ->execute([
                     'credit' => $newCredit,
                     'id' => $transaction->getUserId(),
                 ]);
     
-            // Insert transaction
             $query = $this->pdo->prepare("
                 INSERT INTO transactions (user_id, amount, date, vanished_at)
                 VALUES (:user_id, :amount, :date, :vanished_at)
@@ -55,7 +49,7 @@ class TransactionRepository {
     
         } catch (\Exception $e) {
             $this->pdo->rollBack();
-            throw $e;
+            throw new PDOException("Failed to create transaction: " . $e->getMessage());
         }
     }
 
