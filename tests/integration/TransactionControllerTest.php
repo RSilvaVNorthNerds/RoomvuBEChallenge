@@ -19,27 +19,27 @@ afterEach(function () {
 });
 
 test('create transaction successfully', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'user_id' => 1,
         'amount' => 100.50,
         'date' => '2024-03-20'
     ]));
 
-    $user = new UserModel('John Doe', 500.00, 1);
+    $mockUser = new UserModel('John Doe', 500.00, 1);
 
-    $transaction = new TransactionModel(1, 100.50, '2024-03-20');
+    $mockTransaction = new TransactionModel(1, 100.50, '2024-03-20');
 
     $this->userService->shouldReceive('getUserById')
         ->with(1)
         ->once()
-        ->andReturn($user);
+        ->andReturn($mockUser);
 
     $this->transactionService->shouldReceive('runTransaction')
         ->with(Mockery::type(TransactionModel::class))
         ->once()
-        ->andReturn($transaction);
+        ->andReturn($mockTransaction);
 
-    $response = $this->controller->createTransaction($request);
+    $response = $this->controller->createTransaction($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_CREATED);
     expect(json_decode($response->getContent(), true))->toMatchArray([
@@ -51,32 +51,32 @@ test('create transaction successfully', function () {
 });
 
 test('create transaction fails with missing required fields', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'user_id' => 1,
         // Missing amount and date
     ]));
 
-    $response = $this->controller->createTransaction($request);
+    $response = $this->controller->createTransaction($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_BAD_REQUEST);
     expect(json_decode($response->getContent(), true))->toHaveKey('error');
 });
 
 test('create transaction fails with invalid date format', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'user_id' => 1,
         'amount' => 100.50,
         'date' => 'invalid-date'
     ]));
 
-    $response = $this->controller->createTransaction($request);
+    $response = $this->controller->createTransaction($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_BAD_REQUEST);
     expect(json_decode($response->getContent(), true))->toHaveKey('error');
 });
 
 test('create transaction fails when user does not exist', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'user_id' => 999,
         'amount' => 100.50,
         'date' => '2024-03-20'
@@ -87,14 +87,14 @@ test('create transaction fails when user does not exist', function () {
         ->once()
         ->andReturn(null);
 
-    $response = $this->controller->createTransaction($request);
+    $response = $this->controller->createTransaction($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_BAD_REQUEST);
     expect(json_decode($response->getContent(), true))->toHaveKey('error');
 });
 
 test('archive transaction successfully', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'id' => 1
     ]));
 
@@ -102,7 +102,7 @@ test('archive transaction successfully', function () {
         ->with(1)
         ->once();
 
-    $response = $this->controller->archiveTransaction($request);
+    $response = $this->controller->archiveTransaction($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_OK);
     expect(json_decode($response->getContent(), true))->toMatchArray([
@@ -111,20 +111,20 @@ test('archive transaction successfully', function () {
 });
 
 test('archive transaction fails with missing id', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([]));
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([]));
 
-    $response = $this->controller->archiveTransaction($request);
+    $response = $this->controller->archiveTransaction($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_BAD_REQUEST);
     expect(json_decode($response->getContent(), true))->toHaveKey('error');
 });
 
 test('archive transaction fails with invalid id', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'id' => 'invalid'
     ]));
 
-    $response = $this->controller->archiveTransaction($request);
+    $response = $this->controller->archiveTransaction($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_BAD_REQUEST);
     expect(json_decode($response->getContent(), true))->toHaveKey('error');

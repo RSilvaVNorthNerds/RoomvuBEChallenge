@@ -16,7 +16,7 @@ afterEach(function () {
 });
 
 test('create user successfully', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'name' => 'John Doe',
         'credit' => 100.50
     ]));
@@ -25,7 +25,7 @@ test('create user successfully', function () {
         ->once()
         ->with(Mockery::type(UserModel::class));
 
-    $response = $this->controller->createUser($request);
+    $response = $this->controller->createUser($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_OK);
     expect(json_decode($response->getContent(), true))
@@ -35,11 +35,11 @@ test('create user successfully', function () {
 });
 
 test('create user fails with missing required fields', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'name' => ''
     ]));
 
-    $response = $this->controller->createUser($request);
+    $response = $this->controller->createUser($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_BAD_REQUEST);
     expect(json_decode($response->getContent(), true))
@@ -48,7 +48,7 @@ test('create user fails with missing required fields', function () {
 });
 
 test('populate fake users successfully', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([
         'amount' => 5
     ]));
 
@@ -56,7 +56,7 @@ test('populate fake users successfully', function () {
         ->once()
         ->with(5);
 
-    $response = $this->controller->populateFakeUsers($request);
+    $response = $this->controller->populateFakeUsers($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_OK);
     expect(json_decode($response->getContent(), true))
@@ -65,9 +65,9 @@ test('populate fake users successfully', function () {
 });
 
 test('populate fake users fails with missing amount', function () {
-    $request = new Request([], [], [], [], [], [], json_encode([]));
+    $mockRequest = new Request([], [], [], [], [], [], json_encode([]));
 
-    $response = $this->controller->populateFakeUsers($request);
+    $response = $this->controller->populateFakeUsers($mockRequest);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_BAD_REQUEST);
     expect(json_decode($response->getContent(), true))

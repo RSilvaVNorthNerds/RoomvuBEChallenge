@@ -3,11 +3,9 @@
 use App\Models\UserModel;
 use App\Repositories\UserRepository;
 use App\Services\UserService;
-use Mockery;
-use Mockery\MockInterface;
 
 beforeEach(function () {
-    $this->userRepository = Mockery::mock(UserRepository::class);
+    $this->userRepository = mock(UserRepository::class);
     $this->userService = new UserService($this->userRepository);
 });
 
@@ -16,66 +14,66 @@ afterEach(function () {
 });
 
 test('createUser calls repository with correct user model', function () {
-    $user = new UserModel(name: 'John Doe', credit: 100.00);
+    $mockUser = new UserModel(name: 'John Doe', credit: 100.00);
     
     $this->userRepository
         ->shouldReceive('createUser')
         ->once()
-        ->with($user);
+        ->with($mockUser);
     
-    $this->userService->createUser($user);
+    $this->userService->createUser($mockUser);
 });
 
 test('populateFakeUsers creates specified number of users', function () {
-    $amount = 5;
+    $mockAmount = 5;
     
     $this->userRepository
         ->shouldReceive('createUser')
-        ->times($amount);
+        ->times($mockAmount);
     
-    $this->userService->populateFakeUsers($amount);
+    $this->userService->populateFakeUsers($mockAmount);
 });
 
 test('getUserBalance returns correct balance from repository', function () {
-    $userId = 1;
-    $expectedBalance = 500.00;
+    $mockUserId = 1;
+    $mockExpectedBalance = 500.00;
     
     $this->userRepository
         ->shouldReceive('getUserBalance')
         ->once()
-        ->with($userId)
-        ->andReturn($expectedBalance);
+        ->with($mockUserId)
+        ->andReturn($mockExpectedBalance);
     
-    $balance = $this->userService->getUserBalance($userId);
+    $balance = $this->userService->getUserBalance($mockUserId);
     
-    expect($balance)->toBe($expectedBalance);
+    expect($balance)->toBe($mockExpectedBalance);
 });
 
 test('getUserById returns user model from repository', function () {
-    $userId = 1;
-    $expectedUser = new UserModel(name: 'John Doe', credit: 100.00);
+    $mockUserId = 1;
+    $mockExpectedUser = new UserModel(name: 'John Doe', credit: 100.00);
     
     $this->userRepository
         ->shouldReceive('getUserById')
         ->once()
-        ->with($userId)
-        ->andReturn($expectedUser);
+        ->with($mockUserId)
+        ->andReturn($mockExpectedUser);
     
-    $user = $this->userService->getUserById($userId);
+    $user = $this->userService->getUserById($mockUserId);
     
-    expect($user)->toBe($expectedUser);
+    expect($user)->toBe($mockExpectedUser);
 });
 
 test('getUserById returns null when user not found', function () {
-    $userId = 999;
+    $mockUserId = 999;
     
     $this->userRepository
         ->shouldReceive('getUserById')
         ->once()
-        ->with($userId)
+        ->with($mockUserId)
         ->andReturn(null);
     
-    $user = $this->userService->getUserById($userId);
+    $user = $this->userService->getUserById($mockUserId);
     
     expect($user)->toBeNull();
 });

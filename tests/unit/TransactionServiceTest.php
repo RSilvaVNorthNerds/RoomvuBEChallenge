@@ -5,124 +5,127 @@ use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
 use App\Services\TransactionService;
 use App\Models\UserModel;
-use PHPUnit\Framework\MockObject\MockObject;
 
 beforeEach(function () {
-    $this->transactionRepository = $this->createMock(TransactionRepository::class);
-    $this->userRepository = $this->createMock(UserRepository::class);
+    $this->transactionRepository = mock(TransactionRepository::class);
+    $this->userRepository = mock(UserRepository::class);
     $this->transactionService = new TransactionService($this->transactionRepository, $this->userRepository);
 });
 
+afterEach(function () {
+    Mockery::close();
+});
+
 test('runTransaction successfully processes a valid transaction', function () {
-    $userId = 1;
-    $amount = 100;
-    $date = (new DateTime())->format('Y-m-d');
-    $transactionId = '1';
+    $mockUserId = 1;
+    $mockAmount = 100;
+    $mockDate = (new DateTime())->format('Y-m-d');
+    $mockTransactionId = '1';
     
-    $user = new UserModel( 'John Doe', 500, $userId);
-    $transaction = new TransactionModel($userId, $amount, $date);
+    $mockUser = new UserModel('John Doe', 500, $mockUserId);
+    $mockTransaction = new TransactionModel($mockUserId, $mockAmount, $mockDate);
     
-    $this->userRepository->expects($this->once())
-        ->method('getUserById')
-        ->with($userId)
-        ->willReturn($user);
+    $this->userRepository->shouldReceive('getUserById')
+        ->once()
+        ->with($mockUserId)
+        ->andReturn($mockUser);
         
-    $this->transactionRepository->expects($this->once())
-        ->method('createTransaction')
-        ->with($transaction)
-        ->willReturn($transactionId);
+    $this->transactionRepository->shouldReceive('createTransaction')
+        ->once()
+        ->with($mockTransaction)
+        ->andReturn($mockTransactionId);
         
-    $this->userRepository->expects($this->once())
-        ->method('updateCredit')
-        ->with($user);
+    $this->userRepository->shouldReceive('updateCredit')
+        ->once()
+        ->with($mockUser);
     
-    $result = $this->transactionService->runTransaction($transaction);
+    $result = $this->transactionService->runTransaction($mockTransaction);
     
-    expect($result->getId())->toBe((int) $transactionId)
-        ->and($result->getUserId())->toBe($userId);
+    expect($result->getId())->toBe((int) $mockTransactionId)
+        ->and($result->getUserId())->toBe($mockUserId);
 });
 
 test('runTransaction throws exception when user has insufficient balance', function () {
-    $userId = 1;
-    $amount = -600; // Negative amount for withdrawal
-    $date = (new DateTime())->format('Y-m-d H:i:s');
+    $mockUserId = 1;
+    $mockAmount = -600; // Negative amount for withdrawal
+    $mockDate = (new DateTime())->format('Y-m-d H:i:s');
     
-    $user = new UserModel( 'John Doe', 500, $userId); // User has 500 credit
-    $transaction = new TransactionModel($userId, $amount, $date);
+    $mockUser = new UserModel('John Doe', 500, $mockUserId); // User has 500 credit
+    $mockTransaction = new TransactionModel($mockUserId, $mockAmount, $mockDate);
     
-    $this->userRepository->expects($this->once())
-        ->method('getUserById')
-        ->with($userId)
-        ->willReturn($user);
+    $this->userRepository->shouldReceive('getUserById')
+        ->once()
+        ->with($mockUserId)
+        ->andReturn($mockUser);
     
-    expect(fn() => $this->transactionService->runTransaction($transaction))
+    expect(fn() => $this->transactionService->runTransaction($mockTransaction))
         ->toThrow(\Exception::class, 'User has insufficient balance, transaction failed');
 });
 
 test('softDeleteTransaction successfully deletes an existing transaction', function () {
-    $transactionId = 1;
-    $date = (new DateTime())->format('Y-m-d H:i:s');
-    $transaction = new TransactionModel(1, 100, $date, $transactionId);
+    $mockTransactionId = 1;
+    $mockDate = (new DateTime())->format('Y-m-d H:i:s');
+    $mockTransaction = new TransactionModel(1, 100, $mockDate, $mockTransactionId);
     
-    $this->transactionRepository->expects($this->once())
-        ->method('getSingleTransactionById')
-        ->with($transactionId)
-        ->willReturn($transaction);
+    $this->transactionRepository->shouldReceive('getSingleTransactionById')
+        ->once()
+        ->with($mockTransactionId)
+        ->andReturn($mockTransaction);
         
-    $this->transactionRepository->expects($this->once())
-        ->method('softDeleteTransaction')
-        ->with($transactionId)
-        ->willReturn(true);
+    $this->transactionRepository->shouldReceive('softDeleteTransaction')
+        ->once()
+        ->with($mockTransactionId)
+        ->andReturn(true);
     
-    $result = $this->transactionService->softDeleteTransaction($transactionId);
+    $result = $this->transactionService->softDeleteTransaction($mockTransactionId);
     
     expect($result)->toBeTrue();
 });
 
 test('softDeleteTransaction throws exception when transaction not found', function () {
-    $transactionId = 999;
+    $mockTransactionId = 999;
     
-    $this->transactionRepository->expects($this->once())
-        ->method('getSingleTransactionById')
-        ->with($transactionId)
-        ->willThrowException(new \Exception('Transaction not found'));
+    $this->transactionRepository->shouldReceive('getSingleTransactionById')
+        ->once()
+        ->with($mockTransactionId)
+        ->andThrow(new \Exception('Transaction not found'));
     
-    expect(fn() => $this->transactionService->softDeleteTransaction($transactionId))
+    expect(fn() => $this->transactionService->softDeleteTransaction($mockTransactionId))
         ->toThrow(\Exception::class, 'Transaction of the provided id was not found');
 });
 
 test('getAllTransactionsByUserId returns transactions for specific user', function () {
-    $userId = 1;
-    $date = (new DateTime())->format('Y-m-d H:i:s');
-    $transactions = [
-        new TransactionModel($userId, 100, $date, 1),
-        new TransactionModel($userId, -50, $date, 2)
+    $mockUserId = 1;
+    $mockDate = (new DateTime())->format('Y-m-d H:i:s');
+    $mockTransactions = [
+        new TransactionModel($mockUserId, 100, $mockDate, 1),
+        new TransactionModel($mockUserId, -50, $mockDate, 2)
     ];
     
-    $this->transactionRepository->expects($this->once())
-        ->method('getAllTransactionsByUserId')
-        ->with($userId)
-        ->willReturn($transactions);
+    $this->transactionRepository->shouldReceive('getAllTransactionsByUserId')
+        ->once()
+        ->with($mockUserId)
+        ->andReturn($mockTransactions);
     
-    $result = $this->transactionService->getAllTransactionsByUserId($userId);
+    $result = $this->transactionService->getAllTransactionsByUserId($mockUserId);
     
-    expect($result)->toBe($transactions)
+    expect($result)->toBe($mockTransactions)
         ->and(count($result))->toBe(2);
 });
 
 test('getAllTransactions returns all transactions', function () {
-    $date = (new DateTime())->format('Y-m-d H:i:s');
-    $transactions = [
-        new TransactionModel(1, 100, $date, 1),
-        new TransactionModel(2, 200, $date, 2)
+    $mockDate = (new DateTime())->format('Y-m-d H:i:s');
+    $mockTransactions = [
+        new TransactionModel(1, 100, $mockDate, 1),
+        new TransactionModel(2, 200, $mockDate, 2)
     ];
     
-    $this->transactionRepository->expects($this->once())
-        ->method('getAllTransactions')
-        ->willReturn($transactions);
+    $this->transactionRepository->shouldReceive('getAllTransactions')
+        ->once()
+        ->andReturn($mockTransactions);
     
     $result = $this->transactionService->getAllTransactions();
     
-    expect($result)->toBe($transactions)
+    expect($result)->toBe($mockTransactions)
         ->and(count($result))->toBe(2);
 });

@@ -67,27 +67,25 @@ test('generateGlobalDailyReport returns cached data when available', function ()
 });
 
 test('generateGlobalDailyReport generates new report when cache miss', function () {
-    $currentDate = date('Y-m-d');
-    $cacheKey = "global_daily_report_{$currentDate}";
-    $transactions = [
+    $mockCurrentDate = date('Y-m-d');
+    $mockCacheKey = "global_daily_report_{$mockCurrentDate}";
+    $mockTransactions = [
         ['id' => 1, 'amount' => 100, 'date' => '2024-01-01', 'vanished_at' => null],
         ['id' => 2, 'amount' => 200, 'date' => '2024-01-01', 'vanished_at' => null],
     ];
 
-    // Mock Redis cache miss
     $this->redis->shouldReceive('get')
-        ->with($cacheKey)
+        ->with($mockCacheKey)
         ->once()
         ->andReturn(false);
 
-    // Mock transaction service
     $this->transactionService->shouldReceive('getAllTransactions')
         ->once()
-        ->andReturn($transactions);
+        ->andReturn($mockTransactions);
 
     // Mock Redis set
     $this->redis->shouldReceive('setex')
-        ->with($cacheKey, 300, Mockery::type('string'))
+        ->with($mockCacheKey, 300, Mockery::type('string'))
         ->once();
 
     $result = $this->reportingService->generateGlobalDailyReport();
@@ -96,39 +94,36 @@ test('generateGlobalDailyReport generates new report when cache miss', function 
         ->toHaveKeys(['totalAmount', 'numberOfTransactions', 'transactions', 'date'])
         ->and($result['totalAmount'])->toBe(300)
         ->and($result['numberOfTransactions'])->toBe(2)
-        ->and($result['date'])->toBe($currentDate);
+        ->and($result['date'])->toBe($mockCurrentDate);
 });
 
 test('exportUserDailyReportToCSV creates file with correct content', function () {
-    $userId = 1;
-    $transactions = [
+    $mockUserId = 1;
+    $mockTransactions = [
         ['id' => 1, 'amount' => 100, 'date' => '2024-01-01', 'vanished_at' => null],
         ['id' => 2, 'amount' => 200, 'date' => '2024-01-01', 'vanished_at' => null],
     ];
 
     // Mock transaction service
     $this->transactionService->shouldReceive('getAllTransactionsByUserId')
-        ->with($userId)
+        ->with($mockUserId)
         ->once()
-        ->andReturn($transactions);
+        ->andReturn($mockTransactions);
 
-    // Execute the method
-    $result = $this->reportingService->generateUserDailyReport($userId);
+    $this->reportingService->generateUserDailyReport($mockUserId);
 
-    // Verify CSV file was created
     $reportsDir = __DIR__ . '/../../src/reports/userReports';
-    $csvFilePath = $reportsDir . '/user_daily_report_' . $userId . '_' . date('Y-m-d') . '.csv';
+    $csvFilePath = $reportsDir . '/user_daily_report_' . $mockUserId . '_' . date('Y-m-d') . '.csv';
     
     expect(file_exists($csvFilePath))->toBeTrue();
     
-    // Clean up
     if (file_exists($csvFilePath)) {
         unlink($csvFilePath);
     }
 });
 
 test('exportGlobalDailyReportToCSV creates file with correct content', function () {
-    $transactions = [
+    $mockTransactions = [
         ['id' => 1, 'amount' => 100, 'date' => '2024-01-01', 'vanished_at' => null],
         ['id' => 2, 'amount' => 200, 'date' => '2024-01-01', 'vanished_at' => null],
     ];
@@ -137,24 +132,20 @@ test('exportGlobalDailyReportToCSV creates file with correct content', function 
     $this->redis->shouldReceive('get')
         ->andReturn(false);
 
-    // Mock transaction service
     $this->transactionService->shouldReceive('getAllTransactions')
         ->once()
-        ->andReturn($transactions);
+        ->andReturn($mockTransactions);
 
     // Mock Redis set
     $this->redis->shouldReceive('setex');
 
-    // Execute the method
-    $result = $this->reportingService->generateGlobalDailyReport();
+    $this->reportingService->generateGlobalDailyReport();
 
-    // Verify CSV file was created
     $reportsDir = __DIR__ . '/../../src/reports/globalReports';
     $csvFilePath = $reportsDir . '/global_daily_report_' . date('Y-m-d') . '.csv';
     
     expect(file_exists($csvFilePath))->toBeTrue();
     
-    // Clean up
     if (file_exists($csvFilePath)) {
         unlink($csvFilePath);
     }
