@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class ReportingController {
     private $reportingService;
 
-    public function __construct() {
-        $this->reportingService = new ReportingService();
+    public function __construct(ReportingService $reportingService) {
+        $this->reportingService = $reportingService;
     }
 
     public function generateUserDailyReport(Request $request): Response {

@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class TransactionController {
     private $transactionService;
     private $userService;
-    public function __construct() {
-        $this->transactionService = new TransactionService();
-        $this->userService = new UserService();
+    public function __construct(TransactionService $transactionService, UserService $userService) {
+        $this->transactionService = $transactionService;
+        $this->userService = $userService;
     }
 
     public function createTransaction(Request $request): Response {

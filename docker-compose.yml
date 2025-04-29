@@ -3,7 +3,7 @@ services:
     build: .
     volumes:
       - .:/var/www
-      - ./database:/var/www/src/database
+      - ./src/database:/var/www/src/database
     env_file:
       - .env
     environment:

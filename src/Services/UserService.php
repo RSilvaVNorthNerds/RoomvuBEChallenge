@@ -9,8 +9,8 @@ use Faker\Factory as FakerFactory;
 class UserService {
     private $userRepository;
 
-    public function __construct() {
-        $this->userRepository = new UserRepository();
+    public function __construct(UserRepository $userRepository) {
+        $this->userRepository = $userRepository;
     }
 
     public function createUser(UserModel $user): void {

@@ -10,8 +10,7 @@ use App\Config\Database;
 class TransactionRepository {
     private $pdo;
 
-    public function __construct() {
-        $database = Database::getInstance();
+    public function __construct(Database $database) {
         $database->createTables();
         $this->pdo = $database->getConnection();
     }

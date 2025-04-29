@@ -9,9 +9,9 @@ use App\Repositories\UserRepository;
 class TransactionService {
     private $transactionRepository;
     private $userRepository;
-    public function __construct() {
-        $this->transactionRepository = new TransactionRepository();
-        $this->userRepository = new UserRepository();
+    public function __construct(TransactionRepository $transactionRepository, UserRepository $userRepository) {
+        $this->transactionRepository = $transactionRepository;
+        $this->userRepository = $userRepository;
     }
 
     public function runTransaction(TransactionModel $transaction): TransactionModel {

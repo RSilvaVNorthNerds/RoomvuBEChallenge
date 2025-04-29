@@ -8,9 +8,7 @@ use App\Config\Database;
 class UserRepository {
     private $pdo;
 
-    public function __construct() {
-        $database = Database::getInstance();
-        $database->createTables();
+    public function __construct(Database $database) {
         $this->pdo = $database->getConnection();
     }
 

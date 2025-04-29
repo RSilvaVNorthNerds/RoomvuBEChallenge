@@ -7,8 +7,8 @@ class ReportingService {
     private $transactionService;
     private $redis;
 
-    public function __construct() {
-        $this->transactionService = new TransactionService();
+    public function __construct(TransactionService $transactionService) {
+        $this->transactionService = $transactionService;
 
         $redisConnection = RedisAdapter::createConnection(
             "redis://{$_ENV['REDIS_HOST']}:{$_ENV['REDIS_PORT']}"
