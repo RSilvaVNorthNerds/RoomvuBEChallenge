@@ -2,7 +2,8 @@
 /vendor
 /src/reports/globalReports
 /src/reports/userReports
-/database
+/src/database
 
 #Files
 .env
+.phpunit.result.cache
