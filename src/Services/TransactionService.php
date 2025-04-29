@@ -25,6 +25,7 @@ class TransactionService {
         $newCredit = $user->getCredit() + $transaction->getAmount();
     
         if ($newCredit < 0) {
+            error_log("User with id " . $user->getId() . " has insufficient balance $" . $user->getCredit() . ", transaction failed");
             throw new \Exception("User has insufficient balance, transaction failed");
         }
     
