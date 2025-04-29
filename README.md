@@ -35,7 +35,6 @@ The service will be available at `http://localhost:8000`
 - View logs: `composer logs:dev`
 - Restart services: `composer restart:dev`
 - Run tests: `composer test`
-- Generate test coverage: `composer test:coverage`
 
 ## Project Structure
 
@@ -43,7 +42,6 @@ The service will be available at `http://localhost:8000`
 ├── src/              # Source code
 ├── tests/            # Test files
 ├── public/           # Public assets
-├── database/         # Database files
 ├── vendor/           # Composer dependencies
 ├── docker-compose.yml # Docker configuration
 └── Dockerfile        # Application container definition
@@ -64,7 +62,8 @@ The service uses the following environment variables:
 - Symfony Cache 6.0+
 - FakerPHP 1.19+
 - Symfony HTTP Foundation 7.2+
-- PHPUnit 10.0+ (for testing)
+- Pest PHP 2.36+ (for testing)
+- Mockery 1.6+ (for testing)
 
 ## Testing
 
@@ -73,9 +72,4 @@ Run the test suite:
 composer test
 ```
 
-Generate test coverage report:
-```bash
-composer test:coverage
-```
-
-The coverage report will be available in the `coverage` directory.
+The tests are written using Pest PHP, a modern testing framework for PHP.
