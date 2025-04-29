@@ -5,7 +5,7 @@ use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 class ReportingService {
     private $transactionService;
-    private $redis;
+    public $redis;
 
     public function __construct(TransactionService $transactionService) {
         $this->transactionService = $transactionService;

@@ -4,10 +4,9 @@ use App\Controllers\ReportingController;
 use App\Services\ReportingService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Mockery;
 
 beforeEach(function () {
-    $this->reportingService = Mockery::mock(ReportingService::class);
+    $this->reportingService = mock(ReportingService::class);
     $this->controller = new ReportingController($this->reportingService);
 });
 
