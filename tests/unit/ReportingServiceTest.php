@@ -5,17 +5,16 @@ use App\Services\TransactionService;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 beforeEach(function () {
-    // Mock TransactionService
     $this->transactionService = Mockery::mock(TransactionService::class);
     
-    // Mock Redis connection
     $this->redis = Mockery::mock('Redis');
     
-    // Create ReportingService instance with mocked dependencies
-    $this->reportingService = new ReportingService($this->transactionService);
+    // Mock RedisAdapter::createConnection to return our mock
+    $this->redisAdapter = Mockery::mock('overload:' . RedisAdapter::class);
+    $this->redisAdapter->shouldReceive('createConnection')
+        ->andReturn($this->redis);
     
-    // Replace the Redis instance with our mock
-    $this->reportingService->redis = $this->redis;
+    $this->reportingService = new ReportingService($this->transactionService);
 });
 
 afterEach(function () {
@@ -23,54 +22,48 @@ afterEach(function () {
 });
 
 test('generateUserDailyReport returns correct data structure', function () {
-    // Mock transaction data
-    $userId = 1;
-    $transactions = [
+    $mockUserId = 1;
+    $mockTransactions = [
         ['id' => 1, 'amount' => 100, 'date' => '2024-01-01', 'vanished_at' => null],
         ['id' => 2, 'amount' => 200, 'date' => '2024-01-01', 'vanished_at' => null],
-        ['id' => 3, 'amount' => 300, 'date' => '2024-01-01', 'vanished_at' => '2024-01-01'], // Archived transaction
+        ['id' => 3, 'amount' => 300, 'date' => '2024-01-01', 'vanished_at' => '2024-01-01'], 
     ];
 
-    // Mock the transaction service method
     $this->transactionService->shouldReceive('getAllTransactionsByUserId')
-        ->with($userId)
+        ->with($mockUserId)
         ->once()
-        ->andReturn($transactions);
+        ->andReturn($mockTransactions);
 
-    // Execute the method
-    $result = $this->reportingService->generateUserDailyReport($userId);
+    $result = $this->reportingService->generateUserDailyReport($mockUserId);
 
-    // Assert the result structure
     expect($result)->toBeArray()
         ->toHaveKeys(['totalAmount', 'numberOfTransactions', 'transactions', 'date', 'userId'])
-        ->and($result['totalAmount'])->toBe(300) // Only active transactions (100 + 200)
-        ->and($result['numberOfTransactions'])->toBe(2) // Only active transactions
-        ->and($result['userId'])->toBe($userId)
+        ->and($result['totalAmount'])->toBe(300)
+        ->and($result['numberOfTransactions'])->toBe(2) 
+        ->and($result['userId'])->toBe($mockUserId)
         ->and($result['date'])->toBe(date('Y-m-d'));
 });
 
 test('generateGlobalDailyReport returns cached data when available', function () {
-    $currentDate = date('Y-m-d');
-    $cacheKey = "global_daily_report_{$currentDate}";
-    $cachedData = [
+    $mockCurrentDate = date('Y-m-d');
+    $mockCacheKey = "global_daily_report_{$mockCurrentDate}";
+    $mockCachedData = [
         'totalAmount' => 1000,
         'numberOfTransactions' => 5,
         'transactions' => [],
-        'date' => $currentDate
+        'date' => $mockCurrentDate
     ];
 
-    // Mock Redis cache hit
     $this->redis->shouldReceive('get')
-        ->with($cacheKey)
+        ->with($mockCacheKey)
         ->once()
-        ->andReturn(json_encode($cachedData));
+        ->andReturn(json_encode($mockCachedData));
 
-    // Transaction service should not be called when cache hit
     $this->transactionService->shouldNotReceive('getAllTransactions');
 
     $result = $this->reportingService->generateGlobalDailyReport();
 
-    expect($result)->toBe($cachedData);
+    expect($result)->toBe($mockCachedData);
 });
 
 test('generateGlobalDailyReport generates new report when cache miss', function () {

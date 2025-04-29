@@ -4,6 +4,7 @@ use App\Controllers\TransactionController;
 use App\Services\TransactionService;
 use App\Services\UserService;
 use App\Models\TransactionModel;
+use App\Models\UserModel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -24,8 +25,7 @@ test('create transaction successfully', function () {
         'date' => '2024-03-20'
     ]));
 
-    $user = new \stdClass();
-    $user->id = 1;
+    $user = new UserModel('John Doe', 500.00, 1);
 
     $transaction = new TransactionModel(1, 100.50, '2024-03-20');
 

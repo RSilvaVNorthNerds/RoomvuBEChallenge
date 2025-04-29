@@ -34,7 +34,10 @@ class UserController {
 
         $this->userService->createUser($user);
 
-        return new JsonResponse($user);
+        return new JsonResponse([
+            'name' => $user->getName(),
+            'credit' => $user->getCredit()
+        ]);
     }
 
     public function populateFakeUsers(Request $request): Response {
