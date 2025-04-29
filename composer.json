@@ -19,8 +19,7 @@
     "stop:dev": "docker-compose down",
     "logs:dev": "docker-compose logs -f",
     "restart:dev": "docker-compose restart",
-    "test": "pest",
-    "test:coverage": "pest --coverage"
+    "test": "pest"
   },
   "config": {
     "process-timeout": 0,
