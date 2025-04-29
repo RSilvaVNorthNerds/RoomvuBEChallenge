@@ -15,7 +15,7 @@ class TransactionService {
         $this->userRepository = $userRepository;
     }
 
-    public function runTransaction(TransactionModel $transaction): TransactionModel {
+    public function createTransaction(TransactionModel $transaction): TransactionModel {
         $user = $this->userRepository->getUserById($transaction->getUserId());
     
         if (!$user) {

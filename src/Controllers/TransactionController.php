@@ -57,7 +57,7 @@ class TransactionController {
         $transaction = new TransactionModel($user_id, $amount, $date);
 
         try {
-            $createdUser = $this->transactionService->runTransaction($transaction);
+            $createdUser = $this->transactionService->createTransaction($transaction);
             return new JsonResponse([
                 'user_id' => $createdUser->getUserId(),
                 'amount' => $createdUser->getAmount(),

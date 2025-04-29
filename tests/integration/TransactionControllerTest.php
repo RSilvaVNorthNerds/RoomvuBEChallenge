@@ -39,7 +39,7 @@ test('create transaction successfully', function () {
         ->once()
         ->andReturn($mockUser);
 
-    $this->transactionService->shouldReceive('runTransaction')
+    $this->transactionService->shouldReceive('createTransaction')
         ->with(Mockery::type(TransactionModel::class))
         ->once()
         ->andReturn($mockTransaction);
@@ -189,7 +189,7 @@ test('handles concurrent transactions correctly', function () {
         ->andReturn($mockUser);
 
     // Mock the transaction service to process each transaction and return a new transaction model
-    $this->transactionService->shouldReceive('runTransaction')
+    $this->transactionService->shouldReceive('createTransaction')
         ->with(Mockery::type(TransactionModel::class))
         ->times($totalTransactions)
         ->andReturnUsing(function ($transaction) {

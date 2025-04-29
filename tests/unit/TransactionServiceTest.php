@@ -23,7 +23,7 @@ afterEach(function () {
  * - Updates user's credit balance
  * - Returns transaction with correct ID
  */
-test('runTransaction successfully processes a valid transaction', function () {
+test('createTransaction successfully processes a valid transaction', function () {
     $mockUserId = 1;
     $mockAmount = 100;
     $mockDate = (new DateTime())->format('Y-m-d');
@@ -43,7 +43,7 @@ test('runTransaction successfully processes a valid transaction', function () {
         ->with($mockTransaction, $mockUser->getCredit() + $mockAmount)
         ->andReturn($expectedTransaction);
     
-    $result = $this->transactionService->runTransaction($mockTransaction);
+    $result = $this->transactionService->createTransaction($mockTransaction);
     
     expect($result->getId())->toBe($mockTransactionId)
         ->and($result->getUserId())->toBe($mockUserId)
@@ -55,7 +55,7 @@ test('runTransaction successfully processes a valid transaction', function () {
  * - Verifies exception is thrown when withdrawal amount exceeds available credit
  * - Ensures transaction is not processed when balance check fails
  */
-test('runTransaction throws exception when user has insufficient balance', function () {
+test('createTransaction throws exception when user has insufficient balance', function () {
     $mockUserId = 1;
     $mockAmount = -600; // Negative amount for withdrawal
     $mockDate = (new DateTime())->format('Y-m-d H:i:s');
@@ -68,7 +68,7 @@ test('runTransaction throws exception when user has insufficient balance', funct
         ->with($mockUserId)
         ->andReturn($mockUser);
     
-    expect(fn() => $this->transactionService->runTransaction($mockTransaction))
+    expect(fn() => $this->transactionService->createTransaction($mockTransaction))
         ->toThrow(\Exception::class, 'User has insufficient balance, transaction failed');
 });
 
